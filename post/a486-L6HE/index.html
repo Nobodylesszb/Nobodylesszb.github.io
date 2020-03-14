@@ -1,22 +1,178 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-    <id>https://Nobodylesszb.github.io</id>
-    <title>博</title>
-    <updated>2020-03-14T16:15:58.693Z</updated>
-    <generator>https://github.com/jpmonette/feed</generator>
-    <link rel="alternate" href="https://Nobodylesszb.github.io"/>
-    <link rel="self" href="https://Nobodylesszb.github.io/atom.xml"/>
-    <subtitle>温故而知新</subtitle>
-    <logo>https://Nobodylesszb.github.io/images/avatar.png</logo>
-    <icon>https://Nobodylesszb.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2020, 博</rights>
-    <entry>
-        <title type="html"><![CDATA[docker部署主从数据库]]></title>
-        <id>https://Nobodylesszb.github.io/post/a486-L6HE/</id>
-        <link href="https://Nobodylesszb.github.io/post/a486-L6HE/">
-        </link>
-        <updated>2020-03-14T16:05:17.000Z</updated>
-        <content type="html"><![CDATA[<h2 id="docker部署主从数据库">docker部署主从数据库</h2>
+<html>
+<head>
+  <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="all,follow">
+<meta name="googlebot" content="index,follow,snippet,archive">
+<title>docker部署主从数据库 | 博</title>
+<link rel="shortcut icon" href="https://Nobodylesszb.github.io/favicon.ico?v=1584202554110">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+<link rel="stylesheet" href="https://Nobodylesszb.github.io/styles/main.css" type='text/css' media='all'>
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+
+
+
+</head>
+<body class="home blog ct-body standard">
+<div id="overflow-container" class="overflow-container">
+  <a class="skip-content" href="#main">Skip to content</a>
+  <header id="site-header" class="site-header" role="banner">
+    <div class='top-navigation top-navigation-important'>
+        <div class='container'>
+            <div id="menu-secondary" class="menu-container menu-secondary" role="navigation">
+                <button id="toggle-secondary-navigation" class="toggle-secondary-navigation"><i class="fa fa-plus"></i></button>
+                <div class="menu">
+                    <ul id="menu-secondary-items" class="menu-secondary-items">
+                        
+                        
+                            
+                        <li id="menu-item" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item">
+                            <a href="https://Nobodylesszb.github.io/tag/frWwUTzjP/">docker</a>
+                        </li>
+                            
+                        
+                            
+                        <li id="menu-item" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item">
+                            <a href="https://Nobodylesszb.github.io/tag/IvNs2ZT9Pk/">mysql</a>
+                        </li>
+                            
+                        
+                            
+                        <li id="menu-item" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item">
+                            <a href="https://Nobodylesszb.github.io/tag/fWjooxrBV/">消息队列</a>
+                        </li>
+                            
+                        
+                            
+                        <li id="menu-item" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item">
+                            <a href="https://Nobodylesszb.github.io/tag/Gm4BV-Pth/">Gridea</a>
+                        </li>
+                            
+                        
+                    </ul>
+                </div>
+            </div>
+            <ul class="social-media-icons">
+                
+                    
+                        <li>
+                            <a href="https://github.com/Nobodylesszb" data-animate-hover="pulse" class="github" target="_blank">
+                                <i class="fab fa-github" title="github"></i>
+                                <span class="screen-reader-text">github</span>
+                            </a>
+                        </li>
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                        <li>
+                            <a href="374904740" data-animate-hover="pulse" class="qq" target="_blank">
+                                <i class="fab fa-qq" title="qq"></i>
+                                <span class="screen-reader-text">qq</span>
+                            </a>
+                        </li>
+                    
+                
+                    
+                
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="title-info" class="title-info">
+            <div id='site-title' class='site-title'>
+                <a href="https://Nobodylesszb.github.io">  博 </a>
+            </div>
+        </div>
+        <button id="toggle-navigation" class="toggle-navigation">
+            <i class="fa fa-bars"></i>
+        </button>
+        <div id="menu-primary-tracks" class="menu-primary-tracks"></div>
+        <div id="menu-primary" class="menu-container menu-primary" role="navigation">
+            <p class="site-description">温故而知新</p>
+            <div class="menu">
+                <ul id="menu-primary-items" class="menu-primary-items">
+                     
+                        
+                            <li id="menu-item" class='menu-item menu-item-type-post_type menu-item-object-page current-menu-item current_page_item'>
+                                <a href="/">首页</a>
+                            </li>
+                        
+                    
+                        
+                            <li id="menu-item" class='menu-item menu-item-type-post_type menu-item-object-page current-menu-item current_page_item'>
+                                <a href="/archives">归档</a>
+                            </li>
+                        
+                    
+                        
+                            <li id="menu-item" class='menu-item menu-item-type-post_type menu-item-object-page current-menu-item current_page_item'>
+                                <a href="/tags">标签</a>
+                            </li>
+                        
+                    
+                        
+                            <li id="menu-item" class='menu-item menu-item-type-post_type menu-item-object-page current-menu-item current_page_item'>
+                                <a href="/post/about">关于</a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+</header>
+
+
+  <div id="main" class="main" role="main">
+    <div id="loop-container" class="loop-container">
+      <div class="post type-post status-publish format-standard has-post-thumbnail hentry category-design tag-design tag-standard-2 tag-tagalicious tag-travel entry full-without-featured odd excerpt-1">
+        
+          <div class='featured-image lazy lazy-bg-image' data-background="https://Nobodylesszb.github.io/post-images/a486-L6HE.png">
+          </div>
+        
+
+        <div class="entry-meta">
+          <span class="date">· 2020-03-15 ·</span> <span> / </span>
+          <span class="author">
+            <a href="https://Nobodylesszb.github.io" title="" rel="author"> Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></a>
+          </span>
+          
+            <span class="category">
+                    <span> / </span>
+                    <a href="https://Nobodylesszb.github.io/tag/frWwUTzjP/">docker</a>
+                </span>
+          
+            <span class="category">
+                    <span> / </span>
+                    <a href="https://Nobodylesszb.github.io/tag/IvNs2ZT9Pk/">mysql</a>
+                </span>
+          
+        </div>
+        <div class='entry-header'>
+          <h1 class='entry-title'>docker部署主从数据库</h1>
+        </div>
+        <div class="entry-container">
+          <div class="entry-content">
+            <article>
+              <h2 id="docker部署主从数据库">docker部署主从数据库</h2>
 <h3 id="下载docker">下载docker</h3>
 <p>笔者是mac版本的docker，下载官网是<a href="https://hub.docker.com/">官网</a>,请各位自行下载</p>
 <h3 id="开启k8s">开启k8s</h3>
@@ -287,101 +443,145 @@ mysql&gt; show slave status
 <p>端口未开放（防火墙）</p>
 </li>
 </ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[消息队列的使用]]></title>
-        <id>https://Nobodylesszb.github.io/post/rabbitmq/</id>
-        <link href="https://Nobodylesszb.github.io/post/rabbitmq/">
-        </link>
-        <updated>2020-03-11T07:39:02.000Z</updated>
-        <content type="html"><![CDATA[<h3 id="爬虫生产者消费者模型">爬虫生产者消费者模型</h3>
-<h4 id="为什么使用rabbitmq">为什么使用rabbitmq</h4>
-<p>我们都知道消息队列主要作用就是<code>解耦，异步，削峰</code>，在处理爬虫的时候遇到下列这样的问题，</p>
-<ul>
-<li>有时候爬取网页时候。总有漏爬的信息。比如一块区域内商家的消息这样，爬虫突然中断，导致漏爬。对于漏爬是不可接受的，因为这是客户要求的，所以就必须先保存商家的id入库，等到真正采集到，再删除</li>
-<li>对于突然中断的任务，如果采用之前的方式，是没有消息通知的，</li>
-<li>我们可以允许消息多次消费，但是不能允许消息丢失</li>
-<li>异步爬取。不必立即爬取信息</li>
-</ul>
-<p>综合考察，决定采用消息队列做消息容器</p>
-<h4 id="如何保证rabbitmq的高可用">如何保证rabbitmq的高可用</h4>
-<p>在设计爬虫生产者消费者模型的时候，高可用是必须要保证的，详情请看<a href="https://github.com/Nobodylesszb/ExcellentJava/blob/master/doc/system-design/data-communication/rabbitmq/rabbitmq%E9%AB%98%E5%8F%AF%E7%94%A8.md">rabbitmq高可用</a>)</p>
-<p>这是我写的一篇关于rabbitmq如何高可用的文章</p>
-<h4 id="如何保证消息不被重复消费">如何保证消息不被重复消费</h4>
-<p>虽然在设计爬虫生产者消费者模型的时候对消息的重复性不是那么的关注，但是能不重复消费总是好的</p>
-<h4 id="如何保证消息的可靠性传输-比如消息丢失问题">如何保证消息的可靠性传输。比如消息丢失问题</h4>
-<p>数据的丢失问题，可能出现在生产者、MQ、消费者中，咱们从 RabbitMQ 和 Kafka 分别来分析一下吧。</p>
-<h3 id="rabbitmq">RabbitMQ</h3>
-<p>[<img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1583676539-rabbitmq-message-lose.png" alt="rabbitmq-message-lose" loading="lazy">]</p>
-<h4 id="生产者弄丢了数据">生产者弄丢了数据</h4>
-<p>生产者将数据发送到 RabbitMQ 的时候，可能数据就在半路给搞丢了，因为网络问题啥的，都有可能。</p>
-<p>此时可以选择用 RabbitMQ 提供的事务功能，就是生产者<strong>发送数据之前</strong>开启 RabbitMQ 事务<code>channel.txSelect</code>，然后发送消息，如果消息没有成功被 RabbitMQ 接收到，那么生产者会收到异常报错，此时就可以回滚事务<code>channel.txRollback</code>，然后重试发送消息；如果收到了消息，那么可以提交事务<code>channel.txCommit</code>。</p>
-<pre><code>// 开启事务
-channel.txSelect
-try {
-    // 这里发送消息
-} catch (Exception e) {
-    channel.txRollback
 
-    // 这里再次重发这条消息
-}
+            </article>
+          </div>
+          <div class='entry-meta-bottom'>
+            <div class="entry-categories">
+              <p>
+                <span>Categories</span>
+                
+                  
+                    
+                  <a href="https://Nobodylesszb.github.io/tag/frWwUTzjP/" title="View all posts in docker">docker</a>
+                    
+                    
+                    
+                  <a href="https://Nobodylesszb.github.io/tag/IvNs2ZT9Pk/" title="View all posts in mysql">mysql</a>
+                    
+                    
+                    
+                  <a href="https://Nobodylesszb.github.io/tag/fWjooxrBV/" title="View all posts in 消息队列">消息队列</a>
+                    
+                    
+                    
+                  <a href="https://Nobodylesszb.github.io/tag/Gm4BV-Pth/" title="View all posts in Gridea">Gridea</a>
+                    
+                    
+              </p>
+            </div>
+            <div class="entry-tags">
+              <p><span>Tags</span>
+              </p>
+            </div>
+          </div>
+          <div class="author-meta">
+            <div class="author">
+              <img alt='' src="https://Nobodylesszb.github.io/images/avatar.png?v=1584202554110" class='avatar avatar-72 photo' height='72' width='72'>
+              <span>WRITTEN BY: &nbsp;&nbsp;&nbsp;<a href='https://Nobodylesszb.github.io'></a> </span>
+            </div>
+            <div class="bio">
+              <p></p>
+              
+                
+                  <a class="github" target="_blank"
+                     href="https://github.com/Nobodylesszb">
+                    <i class="fab fa-github" title="github"></i>
+                  </a>
+                
+              
+                
+              
+                
+              
+                
+              
+                
+              
+                
+              
+                
+                  <a class="qq" target="_blank"
+                     href="374904740">
+                    <i class="fab fa-qq" title="qq"></i>
+                  </a>
+                
+              
+                
+              
+            </div>
+          </div>
+        </div>
+          
+            <nav class="navigation pagination" role="navigation">
+              <h2 class="screen-reader-text">Posts navigation</h2>
+              <div class="nav-links">
+                <a class="next page-numbers" href="https://Nobodylesszb.github.io/post/rabbitmq/">下一篇->消息队列的使用</a>
+              </div>
+            </nav>
+          
+      </div>
+      <section id="comments" class="comments">
+        
+      </section>
+    </div>
+  </div>
+  <footer id="site-footer" class="site-footer" role="contentinfo">
+    <h1>
+        <a href="https://Nobodylesszb.github.io"> 博 </a>
+    </h1>
+    <p class="site-description">温故而知新</p>
+    <div id="menu-footer" class="menu-container menu-footer" role="navigation">
+        <div class="menu">
+            <ul id="menu-footer-items" class="menu-footer-items">
+            </ul>
+        </div>
+    </div>
+    <ul class="social-media-icons">
+        
+            
+                <li>
+                    <a href="https://github.com/Nobodylesszb" data-animate-hover="pulse" class="github" target="_blank">
+                        <i class="fab fa-github" title="github"></i>
+                        <span class="screen-reader-text">github</span>
+                    </a>
+                </li>
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+        
+            
+                <li>
+                    <a href="374904740" data-animate-hover="pulse" class="qq" target="_blank">
+                        <i class="fab fa-qq" title="qq"></i>
+                        <span class="screen-reader-text">qq</span>
+                    </a>
+                </li>
+            
+        
+            
+        
+    </ul>
+    <div class="design-credit">
+        <p>Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></p>
+    </div>
+</footer>
+<script>
+    hljs.initHighlightingOnLoad()
+</script>
+<script src="https://Nobodylesszb.github.io/media/scripts/lib/jquery.min.js"></script>
+<script src="https://Nobodylesszb.github.io/media/scripts/lib/jquerymigrate.js"></script>
+<script src="https://Nobodylesszb.github.io/media/scripts/lib/production.min.js"></script>
 
-// 提交事务
-channel.txCommit
-</code></pre>
-<p>但是问题是，RabbitMQ 事务机制（同步）一搞，基本上<strong>吞吐量会下来，因为太耗性能</strong>。</p>
-<p>所以一般来说，如果你要确保说写 RabbitMQ 的消息别丢，可以开启 <code>confirm</code> 模式，在生产者那里设置开启 <code>confirm</code> 模式之后，你每次写的消息都会分配一个唯一的 id，然后如果写入了 RabbitMQ 中，RabbitMQ 会给你回传一个 <code>ack</code> 消息，告诉你说这个消息 ok 了。如果 RabbitMQ 没能处理这个消息，会回调你的一个 <code>nack</code> 接口，告诉你这个消息接收失败，你可以重试。而且你可以结合这个机制自己在内存里维护每个消息 id 的状态，如果超过一定时间还没接收到这个消息的回调，那么你可以重发。</p>
-<p>事务机制和 <code>confirm</code> 机制最大的不同在于，<strong>事务机制是同步的</strong>，你提交一个事务之后会<strong>阻塞</strong>在那儿，但是 <code>confirm</code> 机制是<strong>异步</strong>的，你发送个消息之后就可以发送下一个消息，然后那个消息 RabbitMQ 接收了之后会异步回调你的一个接口通知你这个消息接收到了。</p>
-<p>所以一般在生产者这块<strong>避免数据丢失</strong>，都是用 <code>confirm</code> 机制的。</p>
-<h4 id="rabbitmq-弄丢了数据">RabbitMQ 弄丢了数据</h4>
-<p>就是 RabbitMQ 自己弄丢了数据，这个你必须<strong>开启 RabbitMQ 的持久化</strong>，就是消息写入之后会持久化到磁盘，哪怕是 RabbitMQ 自己挂了，<strong>恢复之后会自动读取之前存储的数据</strong>，一般数据不会丢。除非极其罕见的是，RabbitMQ 还没持久化，自己就挂了，<strong>可能导致少量数据丢失</strong>，但是这个概率较小。</p>
-<p>设置持久化有<strong>两个步骤</strong>：</p>
-<ul>
-<li>创建 queue 的时候将其设置为持久化<br>
-这样就可以保证 RabbitMQ 持久化 queue 的元数据，但是它是不会持久化 queue 里的数据的。</li>
-<li>第二个是发送消息的时候将消息的 <code>deliveryMode</code> 设置为 2<br>
-就是将消息设置为持久化的，此时 RabbitMQ 就会将消息持久化到磁盘上去。</li>
-</ul>
-<p>必须要同时设置这两个持久化才行，RabbitMQ 哪怕是挂了，再次重启，也会从磁盘上重启恢复 queue，恢复这个 queue 里的数据。</p>
-<p>注意，哪怕是你给 RabbitMQ 开启了持久化机制，也有一种可能，就是这个消息写到了 RabbitMQ 中，但是还没来得及持久化到磁盘上，结果不巧，此时 RabbitMQ 挂了，就会导致内存里的一点点数据丢失。</p>
-<p>所以，持久化可以跟生产者那边的 <code>confirm</code> 机制配合起来，只有消息被持久化到磁盘之后，才会通知生产者 <code>ack</code> 了，所以哪怕是在持久化到磁盘之前，RabbitMQ 挂了，数据丢了，生产者收不到 <code>ack</code>，你也是可以自己重发的。</p>
-<h4 id="消费端弄丢了数据">消费端弄丢了数据</h4>
-<p>RabbitMQ 如果丢失了数据，主要是因为你消费的时候，<strong>刚消费到，还没处理，结果进程挂了</strong>，比如重启了，那么就尴尬了，RabbitMQ 认为你都消费了，这数据就丢了。</p>
-<p>这个时候得用 RabbitMQ 提供的 <code>ack</code> 机制，简单来说，就是你必须关闭 RabbitMQ 的自动 <code>ack</code>，可以通过一个 api 来调用就行，然后每次你自己代码里确保处理完的时候，再在程序里 <code>ack</code> 一把。这样的话，如果你还没处理完，不就没有 <code>ack</code> 了？那 RabbitMQ 就认为你还没处理完，这个时候 RabbitMQ 会把这个消费分配给别的 consumer 去处理，消息是不会丢的。</p>
-<p>[<img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1583676540-rabbitmq-message-lose-solution.png" alt="rabbitmq-message-lose-solution" loading="lazy">]</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Hello Gridea]]></title>
-        <id>https://Nobodylesszb.github.io/post/hello-gridea/</id>
-        <link href="https://Nobodylesszb.github.io/post/hello-gridea/">
-        </link>
-        <updated>2018-12-11T16:00:00.000Z</updated>
-        <summary type="html"><![CDATA[<p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
-✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
-]]></summary>
-        <content type="html"><![CDATA[<p>👏  欢迎使用 <strong>Gridea</strong> ！<br>
-✍️  <strong>Gridea</strong> 一个静态博客写作客户端。你可以用它来记录你的生活、心情、知识、笔记、创意... ...</p>
-<!-- more -->
-<p><a href="https://github.com/getgridea/gridea">Github</a><br>
-<a href="https://gridea.dev/">Gridea 主页</a><br>
-<a href="http://fehey.com/">示例网站</a></p>
-<h2 id="特性">特性👇</h2>
-<p>📝  你可以使用最酷的 <strong>Markdown</strong> 语法，进行快速创作</p>
-<p>🌉  你可以给文章配上精美的封面图和在文章任意位置插入图片</p>
-<p>🏷️  你可以对文章进行标签分组</p>
-<p>📋  你可以自定义菜单，甚至可以创建外部链接菜单</p>
-<p>💻  你可以在 <strong>Windows</strong>，<strong>MacOS</strong> 或 <strong>Linux</strong> 设备上使用此客户端</p>
-<p>🌎  你可以使用 <strong>𝖦𝗂𝗍𝗁𝗎𝖻 𝖯𝖺𝗀𝖾𝗌</strong> 或 <strong>Coding Pages</strong> 向世界展示，未来将支持更多平台</p>
-<p>💬  你可以进行简单的配置，接入 <a href="https://github.com/gitalk/gitalk">Gitalk</a> 或 <a href="https://github.com/SukkaW/DisqusJS">DisqusJS</a> 评论系统</p>
-<p>🇬🇧  你可以使用<strong>中文简体</strong>或<strong>英语</strong></p>
-<p>🌁  你可以任意使用应用内默认主题或任意第三方主题，强大的主题自定义能力</p>
-<p>🖥  你可以自定义源文件夹，利用 OneDrive、百度网盘、iCloud、Dropbox 等进行多设备同步</p>
-<p>🌱 当然 <strong>Gridea</strong> 还很年轻，有很多不足，但请相信，它会不停向前 🏃</p>
-<p>未来，它一定会成为你离不开的伙伴</p>
-<p>尽情发挥你的才华吧！</p>
-<p>😘 Enjoy~</p>
-]]></content>
-    </entry>
-</feed>
+</div>
+</body>
+</html>
+
