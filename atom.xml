@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Nobodylesszb.github.io</id>
     <title>博</title>
-    <updated>2020-03-14T16:25:40.814Z</updated>
+    <updated>2020-03-14T16:30:47.535Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Nobodylesszb.github.io"/>
     <link rel="self" href="https://Nobodylesszb.github.io/atom.xml"/>
@@ -93,7 +93,7 @@ e95e247dc96d547bf37b8ee388e9d351e196c4e92cee88441f74efd510527962 --镜像
 <figure data-type="image" tabindex="6"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1584195715-image-20200314222155737.png" alt="image-20200314222155737" loading="lazy"></figure>
 <p>我们在用navicate连接测试一下</p>
 <figure data-type="image" tabindex="7"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1584195835-image-20200314222355460.png" alt="image-20200314222355460" loading="lazy"></figure>
-<h3 id="创建mysql-3307master-2">创建mysql-3307（master）</h3>
+<h3 id="创建mysql-3308slave">创建mysql-3308（slave）</h3>
 <p>和前面的主库差不多，不过从库的配置文件变了</p>
 <pre><code class="language-bash"> mkdir -p /docker/mysql/mysql-3308/conf
  mkdir -p /docker/mysql/mysql-3308/mysql-files
