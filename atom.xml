@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Nobodylesszb.github.io</id>
     <title>博</title>
-    <updated>2020-03-15T09:46:54.516Z</updated>
+    <updated>2020-03-15T09:49:21.399Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Nobodylesszb.github.io"/>
     <link rel="self" href="https://Nobodylesszb.github.io/atom.xml"/>
@@ -16,8 +16,7 @@
         <link href="https://Nobodylesszb.github.io/post/a486-L6HE/">
         </link>
         <updated>2020-03-14T16:05:17.000Z</updated>
-        <content type="html"><![CDATA[<h2 id="docker部署主从数据库">docker部署主从数据库</h2>
-<h3 id="下载docker">下载docker</h3>
+        <content type="html"><![CDATA[<h3 id="下载docker">下载docker</h3>
 <p>笔者是mac版本的docker，下载官网是<a href="https://hub.docker.com/">官网</a>,请各位自行下载</p>
 <h3 id="开启k8s">开启k8s</h3>
 <p>笔者在开启k8s的时候总是显示<code>starting</code>但是就是启动不起来。一番查找之后找到了原因，由于众所周知的原因，启动 Kubernetes 所需的镜像往往会下载失败，于是点击 <em>Apply</em> 后，该配置页面的右下角始终显示 <em>Kubernetes is starting</em>，无法正常启动。</p>
