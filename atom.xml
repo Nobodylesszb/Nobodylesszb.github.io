@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Nobodylesszb.github.io</id>
     <title>博</title>
-    <updated>2020-03-15T09:49:21.399Z</updated>
+    <updated>2020-04-07T15:07:15.163Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Nobodylesszb.github.io"/>
     <link rel="self" href="https://Nobodylesszb.github.io/atom.xml"/>
@@ -10,6 +10,77 @@
     <logo>https://Nobodylesszb.github.io/images/avatar.png</logo>
     <icon>https://Nobodylesszb.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, 博</rights>
+    <entry>
+        <title type="html"><![CDATA[Spring Cloud Eureka：服务注册与发现]]></title>
+        <id>https://Nobodylesszb.github.io/post/uGJMQ57dS/</id>
+        <link href="https://Nobodylesszb.github.io/post/uGJMQ57dS/">
+        </link>
+        <updated>2020-04-07T14:58:54.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="spring-cloud-eureka服务注册与发现">Spring Cloud Eureka：服务注册与发现</h1>
+<h2 id="摘要">摘要</h2>
+<p>Spring Cloud Eureka是Spring Cloud Netflix 子项目的核心组件之一，主要用于微服务架构中的服务治理。 本文将对搭建Eureka注册中心，搭建Eureka客户端，搭建Eureka集群及给Eureka注册中心添加登录认证进行介绍。</p>
+<h2 id=""></h2>
+<h2 id="eureka简介">Eureka简介</h2>
+<p>在微服务架构中往往会有一个注册中心，每个微服务都会向注册中心去注册自己的地址及端口信息，注册中心维护着服务名称与服务实例的对应关系。每个微服务都会定时从注册中心获取服务列表，同时汇报自己的运行情况，这样当有的服务需要调用其他服务时，就可以从自己获取到的服务列表中获取实例地址进行调用，Eureka实现了这套服务注册与发现机制。</p>
+<h3 id="搭建eureka注册中心">搭建Eureka注册中心</h3>
+<ul>
+<li>填写应用信息</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1586261155-image-20200407200555211.png" alt="image-20200407200555211" loading="lazy"></figure>
+<ul>
+<li>这里我们选择springcloud组件进行创建</li>
+</ul>
+<figure data-type="image" tabindex="2"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1586261174-image-20200407200614074.png" alt="image-20200407200614074" loading="lazy"></figure>
+<ul>
+<li>在启动类上添加@EnableEurekaServer注解来启用Euerka注册中心功能</li>
+</ul>
+<pre><code class="language-java">@EnableEurekaServer
+@SpringBootApplication
+public class EurekaServerApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(EurekaServerApplication.class, args);
+    }
+
+}
+
+</code></pre>
+<ul>
+<li>在配置文件application.yml中添加Eureka注册中心的配置,这里一共配置三个注册中心。端口分别为8761,8762,8763，两两相互注册</li>
+</ul>
+<pre><code class="language-yml">//application.yml文件
+spring:
+  profiles:
+    active: eureka1
+    
+//application-eureka1.yml
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8762/eureka/,http://localhost:8763/eureka/
+  register-with-eureka: false
+  fetchRegistry: false
+  server:
+    enable-self-preservation: false
+spring:
+  application:
+    name: eureka
+server:
+  port: 8761
+</code></pre>
+<p>其中：</p>
+<ul>
+<li>server.port: 指明了应用启动的端口号</li>
+<li>eureka.instance.hostname: 应用的主机名称</li>
+<li>eureka.client.registerWithEureka: 值为<code>false</code>意味着自身仅作为服务器，不作为客户端</li>
+<li>eureka.client.fetchRegistry: 值为<code>false</code>意味着无需注册自身</li>
+<li>eureka.client.serviceUrl.defaultZone: 指明了应用的URL</li>
+</ul>
+<p>然后依次启动服务</p>
+<figure data-type="image" tabindex="3"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1586270877-image-20200407224757214.png" alt="image-20200407224757214" loading="lazy"></figure>
+<p>源码在<a href="https://github.com/Nobodylesszb/springcloud-guider/tree/master/eureka-server">链接</a></p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[docker部署主从数据库]]></title>
         <id>https://Nobodylesszb.github.io/post/a486-L6HE/</id>
