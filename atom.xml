@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Nobodylesszb.github.io</id>
     <title>博</title>
-    <updated>2020-04-11T12:28:30.687Z</updated>
+    <updated>2020-06-18T06:40:13.134Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Nobodylesszb.github.io"/>
     <link rel="self" href="https://Nobodylesszb.github.io/atom.xml"/>
@@ -10,6 +10,91 @@
     <logo>https://Nobodylesszb.github.io/images/avatar.png</logo>
     <icon>https://Nobodylesszb.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, 博</rights>
+    <entry>
+        <title type="html"><![CDATA[java无法连接7.7.1版本elasticsearch]]></title>
+        <id>https://Nobodylesszb.github.io/post/VR3BsE0kU/</id>
+        <link href="https://Nobodylesszb.github.io/post/VR3BsE0kU/">
+        </link>
+        <updated>2020-06-18T06:39:02.000Z</updated>
+        <content type="html"><![CDATA[<blockquote>
+<p>最近在学习es的过程中遇到一些问题，特来记录一下</p>
+</blockquote>
+<h2 id="前序">前序</h2>
+<p>因为笔者是mac笔记本，所以直接用brew安装的<code>elasticsearch</code>,是7.7.1版本</p>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1592460685-image-20200618141122805.png" alt="image-20200618141122805" loading="lazy"></figure>
+<p>查看es的<a href="https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/index.html">官网文档</a>可以看到7.7.1版本的maven依赖，官方推荐使用<code>high-level</code>的版本</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.elasticsearch.client&lt;/groupId&gt;
+    &lt;artifactId&gt;elasticsearch-rest-high-level-client&lt;/artifactId&gt;
+    &lt;version&gt;7.7.1&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>然后我们再看他的初始化配置</p>
+<pre><code class="language-java">RestHighLevelClient client = new RestHighLevelClient(
+        RestClient.builder(
+                new HttpHost(&quot;localhost&quot;, 9200, &quot;http&quot;),
+                new HttpHost(&quot;localhost&quot;, 9201, &quot;http&quot;)));
+</code></pre>
+<p>我们在java项目中写一个配置类，如下</p>
+<pre><code class="language-java">@Configuration
+public class GulimallElasticSearchConfig {
+
+    @Bean
+    public RestHighLevelClient esRestClient(){
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(new HttpHost(&quot;localhost&quot;, 9200, &quot;http&quot;)));
+        return  client;
+    }
+}
+</code></pre>
+<p>然后基本的yml配置</p>
+<pre><code class="language-yml">server:
+  port:9001
+
+
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+  application:
+    name: search
+</code></pre>
+<p>然后启动</p>
+<pre><code class="language-java">org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'esRestClient' defined in class path resource [com/atguigu/gulimall/search/config/GulimallElasticSearchConfig.class]: Bean instantiation via factory method failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [org.elasticsearch.client.RestHighLevelClient]: Factory method 'esRestClient' threw exception; nested exception is java.lang.NoSuchFieldError: IGNORE_DEPRECATIONS
+	
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1592461149-image-20200618141907712.png" alt="image-20200618141907712" loading="lazy"></figure>
+<p>发现其报错了</p>
+<p>其中最主要的一句报错就是</p>
+<p><strong>org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'esRestClient' defined in class path resource [com/atguigu/gulimall/search/config/GulimallElasticSearchConfig.class]: Bean instantiation via factory method failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [org.elasticsearch.client.RestHighLevelClient]: Factory method 'esRestClient' threw exception; nested exception is java.lang.NoSuchFieldError: IGNORE_DEPRECATIONS</strong></p>
+<h2 id="解决">解决</h2>
+<p>笔者查看了一些stackoverflow,<a href="https://stackoverflow.com/questions/62338588/spring-boot-with-elastic-search-causing-java-lang-nosuchfielderror-ignore-depre">具体网址</a></p>
+<p>不仅需要加这个依赖</p>
+<pre><code class="language-xml">&lt;dependency&gt;
+    &lt;groupId&gt;org.elasticsearch.client&lt;/groupId&gt;
+    &lt;artifactId&gt;elasticsearch-rest-high-level-client&lt;/artifactId&gt;
+    &lt;version&gt;7.7.1&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre>
+<p>仍然需要加这两个依赖</p>
+<pre><code class="language-xml">		&lt;dependency&gt;
+            &lt;groupId&gt;org.elasticsearch.client&lt;/groupId&gt;
+            &lt;artifactId&gt;elasticsearch-rest-client&lt;/artifactId&gt;
+            &lt;version&gt;7.7.1&lt;/version&gt;
+        &lt;/dependency&gt;
+
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.elasticsearch&lt;/groupId&gt;
+            &lt;artifactId&gt;elasticsearch&lt;/artifactId&gt;
+            &lt;version&gt;7.7.1&lt;/version&gt;
+        &lt;/dependency&gt;
+</code></pre>
+<p>然后重新clean，install，重启</p>
+<figure data-type="image" tabindex="3"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1592462290-image-20200618143808157.png" alt="image-20200618143808157" loading="lazy"></figure>
+<p>可见已经启动</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Spring Cloud Eureka：服务注册与发现]]></title>
         <id>https://Nobodylesszb.github.io/post/uGJMQ57dS/</id>
