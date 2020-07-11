@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Nobodylesszb.github.io</id>
     <title>博</title>
-    <updated>2020-06-18T06:40:47.774Z</updated>
+    <updated>2020-07-11T02:35:50.016Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Nobodylesszb.github.io"/>
     <link rel="self" href="https://Nobodylesszb.github.io/atom.xml"/>
@@ -10,6 +10,315 @@
     <logo>https://Nobodylesszb.github.io/images/avatar.png</logo>
     <icon>https://Nobodylesszb.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, 博</rights>
+    <entry>
+        <title type="html"><![CDATA[kong/konga之docker部署]]></title>
+        <id>https://Nobodylesszb.github.io/post/Uhr6PBQSr/</id>
+        <link href="https://Nobodylesszb.github.io/post/Uhr6PBQSr/">
+        </link>
+        <updated>2020-07-11T02:34:27.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="1-前言">1. 前言</h2>
+<p>最近项目有用到kong来做网关，所以来本机安装以下</p>
+<h2 id="2-kong支持的环境">2. Kong支持的环境</h2>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1594395050-webp-20200710233050613.jpg" alt="img" loading="lazy"></figure>
+<p>image.png</p>
+<p>从上图来看Kong对Linux、MacOS、容器、云 支持的还是比较全面的。</p>
+<p><a href="https://links.jianshu.com/go?to=https%3A%2F%2Fkonghq.com%2F">官网地址</a><br>
+<a href="https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2FKong%2Fkong">github地址</a></p>
+<h2 id="3-安装kong">3. 安装Kong</h2>
+<p>你的机器中必须有Docker环境，这个是前提。。Kong 安装有两种方式一种是没有数据库依赖的DB-less 模式，另一种是with a Database 模式。我们这里使用第二种带Database的模式，因为这种模式功能更全。</p>
+<h3 id="31-构建kong的容器网络">3.1 构建Kong的容器网络</h3>
+<p>首先我们创建一个Docker自定义网络，以允许容器相互发现和通信。在下面的创建命令中<code>kong-net</code>是我们创建的Docker网络名称。</p>
+<pre><code class="language-docker">docker network create kong-net
+</code></pre>
+<h3 id="32-搭建数据库环境">3.2 搭建数据库环境</h3>
+<p>Kong 目前使用Cassandra(Facebook开源的分布式的NoSQL数据库) 或者PostgreSql,你可以执行以下命令中的一个来选择你的Database。请注意定义网络 <code>--network=kong-net</code> 。</p>
+<ul>
+<li>Cassandra容器：</li>
+</ul>
+<pre><code class="language-undefined">docker run -d --name kong-database \
+--network=kong-net \
+-p 9042:9042 \
+cassandra:3
+</code></pre>
+<ul>
+<li>PostgreSQL容器：</li>
+</ul>
+<pre><code class="language-bash">docker run -d --name kong-database \
+               --network=kong-net \
+               -p 5432:5432 \
+               -e &quot;POSTGRES_USER=kong&quot; \
+               -e &quot;POSTGRES_DB=kong&quot; \
+               -e &quot;POSTGRES_PASSWORD=kong&quot; \
+               postgres:9.6
+
+</code></pre>
+<p>这里有个小问题。如果你使用的是PostgreSQL，想挂载卷持久化数据到宿主机。通过 <code>-v</code> 命令是不好用的。这里推荐你使用 <code>docker volume create</code> 命令来创建一个挂载。</p>
+<pre><code class="language-undefined">docker volume create kong-volume
+</code></pre>
+<p>然后上面的PostgreSQL就可以通过<code>- v kong-volume:/var/lib/postgresql/data</code> 进行挂载了。</p>
+<pre><code class="language-kotlin">docker run -d --name kong-database \
+--network=kong-net \
+-p 5432:5432 \
+-v kong-volume:/var/lib/postgresql/data \
+-e &quot;POSTGRES_USER=kong&quot; \
+-e &quot;POSTGRES_DB=kong&quot; \
+-e &quot;POSTGRES_PASSWORD=kong&quot; \
+postgres:9.6
+</code></pre>
+<h3 id="33-初始化或者迁移数据库">3.3 初始化或者迁移数据库</h3>
+<p>我们使用<code>docker run --rm</code>来初始化数据库，该命令执行后会退出容器而保留内部的数据卷（volume）。</p>
+<pre><code class="language-bash">docker run --rm \
+     --network=kong-net \
+     -e &quot;KONG_DATABASE=postgres&quot; \
+     -e &quot;KONG_PG_HOST=kong-database&quot; \
+     -e &quot;KONG_PG_USER=kong&quot; \
+     -e &quot;KONG_PG_PASSWORD=kong&quot; \
+     -e &quot;KONG_CASSANDRA_CONTACT_POINTS=kong-database&quot; \
+     kong:latest kong migrations bootstrap
+</code></pre>
+<p>这个命令我们还是要注意的，一定要跟你声明的网络，数据库类型、host名称一致。同时注意Kong的版本号，本文是在<code>Kong 1.4.x</code> 版本下完成的。</p>
+<p>出现以下命令则完成</p>
+<figure data-type="image" tabindex="2"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1594395292-image-20200710233451663.png" alt="image-20200710233451663" loading="lazy"></figure>
+<p>我们可以看到数据库中已经有表出现了</p>
+<figure data-type="image" tabindex="3"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1594395338-image-20200710233537744.png" alt="image-20200710233537744" loading="lazy"></figure>
+<h3 id="34-启动kong容器">3.4 启动Kong容器</h3>
+<p>3.3步骤完成初始化或者迁移数据库后，我们就可以启动一个连接到数据库容器的Kong容器，请务必保证你的数据库容器启动状态，同时检查所有的环境参数 <code>-e</code> 是否是你定义的环境。</p>
+<pre><code class="language-bash">docker run -d --name kong \
+ --network=kong-net \
+ -e &quot;KONG_DATABASE=postgres&quot; \
+ -e &quot;KONG_PG_HOST=kong-database&quot; \
+ -e &quot;KONG_CASSANDRA_CONTACT_POINTS=kong-database&quot; \
+ -e &quot;KONG_PROXY_ACCESS_LOG=/dev/stdout&quot; \
+ -e &quot;KONG_ADMIN_ACCESS_LOG=/dev/stdout&quot; \
+ -e &quot;KONG_PROXY_ERROR_LOG=/dev/stderr&quot; \
+ -e &quot;KONG_ADMIN_ERROR_LOG=/dev/stderr&quot; \
+ -e &quot;KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl&quot; \
+ -p 8000:8000 \
+ -p 8443:8443 \
+ -p 8001:8001 \
+ -p 8444:8444 \
+ kong:latest
+</code></pre>
+<h3 id="35-验证">3.5 验证</h3>
+<p>可通过 <code>curl -i &lt;wiz_tmp_plugin_tag id=&quot;wizKMHighlighterSpan_t_t&quot; style=&quot;color: rgb(0, 0, 0); cursor: pointer; border-bottom-width: 1px; border-bottom-color: rgb(0, 0, 204); border-bottom-style: dashed; background-color: rgb(234, 188, 244);&quot;&gt;http&lt;/wiz_tmp_plugin_tag&gt;://localhost:8001/</code> 或者浏览器调用 <code>http://localhost:8001/</code> 来验证Kong Admin 是否联通 。</p>
+<h2 id="4-安装kong-管理ui">4. 安装Kong 管理UI</h2>
+<p>Kong 企业版提供了管理UI，开源版本是没有的。但是有很多的开源的管理 UI ，其中比较好用的是Konga。项目地址：<a href="https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2Fpantsel%2Fkonga">https://github.com/pantsel/konga</a></p>
+<figure data-type="image" tabindex="4"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1594394999-webp-20200710232958808.jpg" alt="img" loading="lazy"></figure>
+<h3 id="41-konga-特性">4.1 Konga 特性</h3>
+<p>Konga 主要是用 AngularJS 写的，运行于nodejs服务端。具有以下特性：</p>
+<ul>
+<li>管理所有Kong Admin API对象。</li>
+<li>支持从远程源（数据库，文件，API等）导入使用者。</li>
+<li>管理多个Kong节点。使用快照备份，还原和迁移Kong节点。</li>
+<li>使用运行状况检查监视节点和API状态。</li>
+<li>支持电子邮件和闲置通知。</li>
+<li>支持多用户。</li>
+<li>易于数据库集成（MySQL，postgresSQL，MongoDB，SQL Server）。</li>
+</ul>
+<h3 id="42-docker安装konga">4.2 docker安装Konga</h3>
+<p>我们今天通过Docker来安装Konga。安装步骤同样遵循配置数据库，初始化数据库，启动容器的流程。</p>
+<h4 id="421-konga数据库容器">4.2.1 Konga数据库容器</h4>
+<p>上面在4.1特性介绍中我们介绍了Konga支持的数据库类型。这里我们依然使用PostgreSQL。请注意我新定义了挂载卷<code>konga-postgresql</code> 。</p>
+<pre><code class="language-undefined"> docker volume create konga-postgresql
+</code></pre>
+<pre><code class="language-kotlin">docker run -d --name konga-database \
+--network=kong-net \
+-p 5431:5432 \
+-v konga-postgresql:/var/lib/postgresql/data \
+-e &quot;POSTGRES_USER=kong&quot; \
+-e &quot;POSTGRES_DB=konga&quot; \
+-e &quot;POSTGRES_PASSWORD=kong&quot; \
+postgres:9.6
+</code></pre>
+<h3 id="422-初始化konga数据库">4.2.2 初始化Konga数据库</h3>
+<p>初始化 PostgreSQL 数据库。</p>
+<pre><code>docker run --rm  --network=kong-net  pantsel/konga -c prepare -a postgres -u postgresql://kong:kong@konga-database:5432/konga_db
+</code></pre>
+<p>执行命令</p>
+<figure data-type="image" tabindex="5"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1594433834-image-20200711101712846.png" alt="image-20200711101712846" loading="lazy"></figure>
+<p>然后看我们本地端口5431postgresql中查看库</p>
+<figure data-type="image" tabindex="6"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1594433882-image-20200711101802174.png" alt="image-20200711101802174" loading="lazy"></figure>
+<p>相关命令解读：</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+<th>默认</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-c</td>
+<td>执行的命令，这里我们执行的是prepare</td>
+<td>-</td>
+</tr>
+<tr>
+<td>-a</td>
+<td>adapter 简写 ，可以是postgres 或者mysql</td>
+<td>-</td>
+</tr>
+<tr>
+<td>-u</td>
+<td>db url 数据库连接全称</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p>到此Konga的数据库环境就搞定了。</p>
+<h3 id="423-环境参数">4.2.3 环境参数</h3>
+<p>Konga 还有一些可配置的环境参数：</p>
+<table>
+<thead>
+<tr>
+<th>VAR</th>
+<th>DESCRIPTION</th>
+<th>VALUES</th>
+<th>DEFAULT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HOST</td>
+<td>The IP address that will be bind by Konga's server</td>
+<td>-</td>
+<td>'0.0.0.0'</td>
+</tr>
+<tr>
+<td>PORT</td>
+<td>The port that will be used by Konga's server</td>
+<td>-</td>
+<td>1337</td>
+</tr>
+<tr>
+<td>NODE_ENV</td>
+<td>The environment</td>
+<td><code>production</code>,<code>development</code></td>
+<td><code>development</code></td>
+</tr>
+<tr>
+<td>SSL_KEY_PATH</td>
+<td>If you want to use SSL, this will be the absolute path to the .key file. Both <code>SSL_KEY_PATH</code> &amp; <code>SSL_CRT_PATH</code> must be set.</td>
+<td>-</td>
+<td>null</td>
+</tr>
+<tr>
+<td>SSL_CRT_PATH</td>
+<td>If you want to use SSL, this will be the absolute path to the .crt file. Both <code>SSL_KEY_PATH</code> &amp; <code>SSL_CRT_PATH</code> must be set.</td>
+<td>-</td>
+<td>null</td>
+</tr>
+<tr>
+<td>KONGA_HOOK_TIMEOUT</td>
+<td>The time in ms that Konga will wait for startup tasks to finish before exiting the process.</td>
+<td>-</td>
+<td>60000</td>
+</tr>
+<tr>
+<td>DB_ADAPTER</td>
+<td>The database that Konga will use. If not set, the localDisk db will be used.</td>
+<td><code>mongo</code>,<code>mysql</code>,<code>postgres</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>DB_URI</td>
+<td>The full db connection string. Depends on <code>DB_ADAPTER</code>. If this is set, no other DB related var is needed.</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>DB_HOST</td>
+<td>If <code>DB_URI</code> is not specified, this is the database host. Depends on <code>DB_ADAPTER</code>.</td>
+<td>-</td>
+<td>localhost</td>
+</tr>
+<tr>
+<td>DB_PORT</td>
+<td>If <code>DB_URI</code> is not specified, this is the database port. Depends on <code>DB_ADAPTER</code>.</td>
+<td>-</td>
+<td>DB default.</td>
+</tr>
+<tr>
+<td>DB_USER</td>
+<td>If <code>DB_URI</code> is not specified, this is the database user. Depends on <code>DB_ADAPTER</code>.</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>DB_PASSWORD</td>
+<td>If <code>DB_URI</code> is not specified, this is the database user's password. Depends on <code>DB_ADAPTER</code>.</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>DB_DATABASE</td>
+<td>If <code>DB_URI</code> is not specified, this is the name of Konga's db. Depends on <code>DB_ADAPTER</code>.</td>
+<td>-</td>
+<td><code>konga_database</code></td>
+</tr>
+<tr>
+<td>DB_PG_SCHEMA</td>
+<td>If using postgres as a database, this is the schema that will be used.</td>
+<td>-</td>
+<td><code>public</code></td>
+</tr>
+<tr>
+<td>KONGA_LOG_LEVEL</td>
+<td>The logging level</td>
+<td><code>silly</code>,<code>debug</code>,<code>info</code>,<code>warn</code>,<code>error</code></td>
+<td><code>debug</code> on dev environment &amp; <code>warn</code> on prod.</td>
+</tr>
+<tr>
+<td>TOKEN_SECRET</td>
+<td>The secret that will be used to sign JWT tokens issued by Konga</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>NO_AUTH</td>
+<td>Run Konga without Authentication</td>
+<td>true/false</td>
+<td>-</td>
+</tr>
+<tr>
+<td>BASE_URL</td>
+<td>Define a base URL or relative path that Konga will be loaded from. Ex: <a href="https://links.jianshu.com/go?to=http%3A%2F%2Fwww.example.com%2Fkonga">www.example.com/konga</a></td>
+<td></td>
+<td>-</td>
+</tr>
+<tr>
+<td>KONGA_SEED_USER_DATA_SOURCE_FILE</td>
+<td>Seed default users on first run. <a href="https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2Fpantsel%2Fkonga%2Fblob%2Fmaster%2Fdocs%2FSEED_DEFAULT_DATA.md">Docs</a>.</td>
+<td></td>
+<td>-</td>
+</tr>
+<tr>
+<td>KONGA_SEED_KONG_NODE_DATA_SOURCE_FILE</td>
+<td>Seed default Kong Admin API connections on first run <a href="https://links.jianshu.com/go?to=https%3A%2F%2Fgithub.com%2Fpantsel%2Fkonga%2Fblob%2Fmaster%2Fdocs%2FSEED_DEFAULT_DATA.md">Docs</a></td>
+<td></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="424-启动konga">4.2.4 启动Konga</h3>
+<p>通过以下命令就可以启动Konga容器了</p>
+<pre><code class="language-bash">docker run -d -p 1337:1337  \
+               --network kong-net  \
+               -e &quot;DB_ADAPTER=postgres&quot;  \
+               -e &quot;DB_URI=postgres://kong:kong@konga-database:5432/konga_db&quot;  \
+               -e &quot;NODE_ENV=production&quot;  \
+               -e &quot;DB_PASSWORD=konga&quot; \
+               --name konga \
+               pantsel/konga
+</code></pre>
+<p>运行完后，如果成功可以通过<code>http://localhost:1337</code> 链接到控制台。通过注册后进入，然后在dashboard面板里面添加Kong的管理Api路径<code>http://yourdomain</code> 。这里添加docker别名 <code>http://kong:8001</code> 。</p>
+<figure data-type="image" tabindex="7"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1594434815-image-20200711103334311.png" alt="image-20200711103334311" loading="lazy"></figure>
+<h2 id="本文参考">本文参考</h2>
+<ul>
+<li><a href="https://www.yisu.com/zixun/6962.html">docker容器搭建kong-dashboard或konga</a></li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[java无法连接7.7.1版本elasticsearch]]></title>
         <id>https://Nobodylesszb.github.io/post/VR3BsE0kU/</id>
