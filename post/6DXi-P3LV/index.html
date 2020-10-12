@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="all,follow">
 <meta name="googlebot" content="index,follow,snippet,archive">
-<title>消息队列的使用 | 博</title>
+<title>Lombok子类如何使用@Builder | 博</title>
 <link rel="shortcut icon" href="https://Nobodylesszb.github.io/favicon.ico?v=1602468185927">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 <link rel="stylesheet" href="https://Nobodylesszb.github.io/styles/main.css" type='text/css' media='all'>
@@ -159,78 +159,173 @@
         
 
         <div class="entry-meta">
-          <span class="date">· 2020-03-11 ·</span> <span> / </span>
+          <span class="date">· 2020-10-12 ·</span> <span> / </span>
           <span class="author">
             <a href="https://Nobodylesszb.github.io" title="" rel="author"> Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></a>
           </span>
           
-            <span class="category">
-                    <span> / </span>
-                    <a href="https://Nobodylesszb.github.io/tag/fWjooxrBV/">消息队列</a>
-                </span>
-          
         </div>
         <div class='entry-header'>
-          <h1 class='entry-title'>消息队列的使用</h1>
+          <h1 class='entry-title'>Lombok子类如何使用@Builder</h1>
         </div>
         <div class="entry-container">
           <div class="entry-content">
             <article>
-              <h3 id="爬虫生产者消费者模型">爬虫生产者消费者模型</h3>
-<h4 id="为什么使用rabbitmq">为什么使用rabbitmq</h4>
-<p>我们都知道消息队列主要作用就是<code>解耦，异步，削峰</code>，在处理爬虫的时候遇到下列这样的问题，</p>
-<ul>
-<li>有时候爬取网页时候。总有漏爬的信息。比如一块区域内商家的消息这样，爬虫突然中断，导致漏爬。对于漏爬是不可接受的，因为这是客户要求的，所以就必须先保存商家的id入库，等到真正采集到，再删除</li>
-<li>对于突然中断的任务，如果采用之前的方式，是没有消息通知的，</li>
-<li>我们可以允许消息多次消费，但是不能允许消息丢失</li>
-<li>异步爬取。不必立即爬取信息</li>
-</ul>
-<p>综合考察，决定采用消息队列做消息容器</p>
-<h4 id="如何保证rabbitmq的高可用">如何保证rabbitmq的高可用</h4>
-<p>在设计爬虫生产者消费者模型的时候，高可用是必须要保证的，详情请看<a href="https://github.com/Nobodylesszb/ExcellentJava/blob/master/doc/system-design/data-communication/rabbitmq/rabbitmq%E9%AB%98%E5%8F%AF%E7%94%A8.md">rabbitmq高可用</a>)</p>
-<p>这是我写的一篇关于rabbitmq如何高可用的文章</p>
-<h4 id="如何保证消息不被重复消费">如何保证消息不被重复消费</h4>
-<p>虽然在设计爬虫生产者消费者模型的时候对消息的重复性不是那么的关注，但是能不重复消费总是好的</p>
-<h4 id="如何保证消息的可靠性传输-比如消息丢失问题">如何保证消息的可靠性传输。比如消息丢失问题</h4>
-<p>数据的丢失问题，可能出现在生产者、MQ、消费者中，咱们从 RabbitMQ 和 Kafka 分别来分析一下吧。</p>
-<h3 id="rabbitmq">RabbitMQ</h3>
-<p>[<img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1583676539-rabbitmq-message-lose.png" alt="rabbitmq-message-lose" loading="lazy">]</p>
-<h4 id="生产者弄丢了数据">生产者弄丢了数据</h4>
-<p>生产者将数据发送到 RabbitMQ 的时候，可能数据就在半路给搞丢了，因为网络问题啥的，都有可能。</p>
-<p>此时可以选择用 RabbitMQ 提供的事务功能，就是生产者<strong>发送数据之前</strong>开启 RabbitMQ 事务<code>channel.txSelect</code>，然后发送消息，如果消息没有成功被 RabbitMQ 接收到，那么生产者会收到异常报错，此时就可以回滚事务<code>channel.txRollback</code>，然后重试发送消息；如果收到了消息，那么可以提交事务<code>channel.txCommit</code>。</p>
-<pre><code>// 开启事务
-channel.txSelect
-try {
-    // 这里发送消息
-} catch (Exception e) {
-    channel.txRollback
+              <h2 id="一-前言">一、前言</h2>
+<p>业务开发中，子类父类还算是经常用到，Lombok 的 <code>@builder</code> 提供的链式调用帮助我们更轻松的创建对象。但是实验后却发现子类的 <code>@Builder</code> 是不会包含父类的属性。</p>
+<p>假设存在父类 <code>A</code>：</p>
+<pre><code class="language-java">@Data
+@Builder
+public class A {
+    private String aName;
 
-    // 这里再次重发这条消息
+    private String aAge;
 }
-
-// 提交事务
-channel.txCommit
 </code></pre>
-<p>但是问题是，RabbitMQ 事务机制（同步）一搞，基本上<strong>吞吐量会下来，因为太耗性能</strong>。</p>
-<p>所以一般来说，如果你要确保说写 RabbitMQ 的消息别丢，可以开启 <code>confirm</code> 模式，在生产者那里设置开启 <code>confirm</code> 模式之后，你每次写的消息都会分配一个唯一的 id，然后如果写入了 RabbitMQ 中，RabbitMQ 会给你回传一个 <code>ack</code> 消息，告诉你说这个消息 ok 了。如果 RabbitMQ 没能处理这个消息，会回调你的一个 <code>nack</code> 接口，告诉你这个消息接收失败，你可以重试。而且你可以结合这个机制自己在内存里维护每个消息 id 的状态，如果超过一定时间还没接收到这个消息的回调，那么你可以重发。</p>
-<p>事务机制和 <code>confirm</code> 机制最大的不同在于，<strong>事务机制是同步的</strong>，你提交一个事务之后会<strong>阻塞</strong>在那儿，但是 <code>confirm</code> 机制是<strong>异步</strong>的，你发送个消息之后就可以发送下一个消息，然后那个消息 RabbitMQ 接收了之后会异步回调你的一个接口通知你这个消息接收到了。</p>
-<p>所以一般在生产者这块<strong>避免数据丢失</strong>，都是用 <code>confirm</code> 机制的。</p>
-<h4 id="rabbitmq-弄丢了数据">RabbitMQ 弄丢了数据</h4>
-<p>就是 RabbitMQ 自己弄丢了数据，这个你必须<strong>开启 RabbitMQ 的持久化</strong>，就是消息写入之后会持久化到磁盘，哪怕是 RabbitMQ 自己挂了，<strong>恢复之后会自动读取之前存储的数据</strong>，一般数据不会丢。除非极其罕见的是，RabbitMQ 还没持久化，自己就挂了，<strong>可能导致少量数据丢失</strong>，但是这个概率较小。</p>
-<p>设置持久化有<strong>两个步骤</strong>：</p>
-<ul>
-<li>创建 queue 的时候将其设置为持久化<br>
-这样就可以保证 RabbitMQ 持久化 queue 的元数据，但是它是不会持久化 queue 里的数据的。</li>
-<li>第二个是发送消息的时候将消息的 <code>deliveryMode</code> 设置为 2<br>
-就是将消息设置为持久化的，此时 RabbitMQ 就会将消息持久化到磁盘上去。</li>
-</ul>
-<p>必须要同时设置这两个持久化才行，RabbitMQ 哪怕是挂了，再次重启，也会从磁盘上重启恢复 queue，恢复这个 queue 里的数据。</p>
-<p>注意，哪怕是你给 RabbitMQ 开启了持久化机制，也有一种可能，就是这个消息写到了 RabbitMQ 中，但是还没来得及持久化到磁盘上，结果不巧，此时 RabbitMQ 挂了，就会导致内存里的一点点数据丢失。</p>
-<p>所以，持久化可以跟生产者那边的 <code>confirm</code> 机制配合起来，只有消息被持久化到磁盘之后，才会通知生产者 <code>ack</code> 了，所以哪怕是在持久化到磁盘之前，RabbitMQ 挂了，数据丢了，生产者收不到 <code>ack</code>，你也是可以自己重发的。</p>
-<h4 id="消费端弄丢了数据">消费端弄丢了数据</h4>
-<p>RabbitMQ 如果丢失了数据，主要是因为你消费的时候，<strong>刚消费到，还没处理，结果进程挂了</strong>，比如重启了，那么就尴尬了，RabbitMQ 认为你都消费了，这数据就丢了。</p>
-<p>这个时候得用 RabbitMQ 提供的 <code>ack</code> 机制，简单来说，就是你必须关闭 RabbitMQ 的自动 <code>ack</code>，可以通过一个 api 来调用就行，然后每次你自己代码里确保处理完的时候，再在程序里 <code>ack</code> 一把。这样的话，如果你还没处理完，不就没有 <code>ack</code> 了？那 RabbitMQ 就认为你还没处理完，这个时候 RabbitMQ 会把这个消费分配给别的 consumer 去处理，消息是不会丢的。</p>
-<p>[<img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1583676540-rabbitmq-message-lose-solution.png" alt="rabbitmq-message-lose-solution" loading="lazy">]</p>
+<p>存在子类 <code>B</code>：</p>
+<pre><code class="language-java">@Builder
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class B extends A {
+    private String bName;
+
+    private String bAge;
+}
+</code></pre>
+<p>使用 <code>builder</code> 进行初始化时，类 A 可以正常创建，类 B 仅可以初始化自己的属性，父类属性无法初始化。</p>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1602467788-20200829214450.png" alt="img" loading="lazy"></figure>
+<h2 id="二-解决构造方法">二、解决：构造方法</h2>
+<p>查阅网络后，一种解决方法是利用构造方法：</p>
+<ol>
+<li>父类生成全参构造方法</li>
+<li>子类手动声明全参构造方法</li>
+<li>将子类 <code>@builder</code> 注解移动全参构造方法上，并设置 <code>builderMethodName</code></li>
+</ol>
+<pre><code class="language-java">@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class A {
+    private String aName;
+
+    private String aAge;
+}
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class B extends A {
+    private String bName;
+
+    private String bAge;
+
+    @Builder(builderMethodName = &quot;childBuilder&quot;)
+    public B(String aName, String aAge, String bName, String bAge) {
+        super(aName, aAge);
+        this.bName = bName;
+        this.bAge = bAge;
+    }
+}
+</code></pre>
+<p>修改 Main 方法如下：</p>
+<pre><code class="language-java">public class BuilderMain {
+    public static void main(String[] args) {
+        A xxx = A.builder()
+                .aName(&quot;aa&quot;)
+                .aAge(&quot;111&quot;)
+                .build();
+        B yyy = B.childBuilder()
+                .aName(&quot;aa&quot;)
+                .aAge(&quot;111&quot;)
+                .bName(&quot;bb&quot;)
+                .bAge(&quot;222&quot;)
+                .build();
+
+        System.out.println(xxx);
+        System.out.println(yyy);
+    }
+}
+</code></pre>
+<p>代码运行后，能得到正确结果：</p>
+<pre><code>A(aName=aa, aAge=111)
+&lt;!-- B(super=A(aName=aa, aAge=111), bName=bb, bAge=222) --&gt;
+</code></pre>
+<p>但是这种方式弊端也很明显：</p>
+<ol>
+<li>子类调用父类的全参构造，当父类参数数量、顺序调整时，子类也需要同步调整。</li>
+<li>如果父类参数过多，构造方法十分不优雅。</li>
+</ol>
+<h2 id="三-解决superbuilder">三、解决：SuperBuilder</h2>
+<p>Lombok 自 <code>v1.18.2</code> 开始，为了解决这个问题，引入了 <code>@SuperBuilder</code> 注解，使用该注解，就可以很容易解决这个问题。</p>
+<p>修改代码如下：</p>
+<pre><code class="language-java">@Data
+@SuperBuilder
+public class A {
+    private String aName;
+
+    private String aAge;
+}
+@SuperBuilder
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class B extends A {
+    private String bName;
+
+    private String bAge;
+}
+</code></pre>
+<p>Main 方法保持不变，代码运行后，能得到正确结果：</p>
+<pre><code class="language-java">A(aName=xxx, aAge=111)
+B(super=A(aName=xxx, aAge=111), bName=yyy, bAge=222)
+</code></pre>
+<p>另外自 <code>v1.18.4</code> 也给 SuperBuilder 引入了<code>toBuilder</code> 参数，可以很方便的进行<strong>浅拷贝</strong>对象，效率虽然比手动 builder 慢一点，但也算是挺快的。</p>
+<pre><code class="language-java">@Data
+@SuperBuilder(toBuilder = true)
+public class A {
+    private String aName;
+
+    private String aAge;
+}
+</code></pre>
+<p>给 B 加入属性 C，测试对象拷贝：</p>
+<pre><code class="language-java">@SuperBuilder(toBuilder = true)
+@Data
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class B extends A {
+    private String bName;
+
+    private String bAge;
+
+    private C c;
+}
+@AllArgsConstructor
+public class C {
+    private String name;
+}
+</code></pre>
+<p>输出结果如下：</p>
+<pre><code class="language-java">public class BuilderMain {
+    public static void main(String[] args) {
+        B b = B.builder()
+                .aName(&quot;xxx&quot;)
+                .aAge(&quot;111&quot;)
+                .bName(&quot;yyy&quot;)
+                .bAge(&quot;222&quot;)
+                .c(new C(&quot;zhangsan&quot;))
+                .build();
+
+        System.out.println(b);
+        System.out.println(b.toBuilder().build());
+    }
+}
+B(super=A(aName=xxx, aAge=111), bName=yyy, bAge=222, c=com.github.jitwxs.demo.builder.C@52cc8049)
+B(super=A(aName=xxx, aAge=111), bName=yyy, bAge=222, c=com.github.jitwxs.demo.builder.C@52cc8049)
+</code></pre>
+<h2 id="四-彩蛋">四、彩蛋</h2>
+<p>由于 <code>@SuperBuilder</code> 刚引入不久，所以还是有一些 BUG 的，比如当你的 SpringBoot 版本为 <code>2.2.3.RELEASE</code> 时，或者你的 Lombok 版本低于 <code>v1.18.12</code> 时，使用上文的例子，你就会发现竟然无法通过编译。</p>
+<figure data-type="image" tabindex="2"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1602467788-20200829221256.png" alt="img" loading="lazy"></figure>
+<p>实际的原因是不支持用 <code>B</code> 来命名类，简直是吐出一口老血，好在升级到 <code>v1.18.12</code> 版本后就修复了这个问题，可能这就是给不规范命名的人埋的坑吧，哈哈。</p>
 
             </article>
           </div>
@@ -312,7 +407,7 @@ channel.txCommit
             <nav class="navigation pagination" role="navigation">
               <h2 class="screen-reader-text">Posts navigation</h2>
               <div class="nav-links">
-                <a class="next page-numbers" href="https://Nobodylesszb.github.io/post/hello-gridea/">下一篇->Hello Gridea</a>
+                <a class="next page-numbers" href="https://Nobodylesszb.github.io/post/Uhr6PBQSr/">下一篇->kong/konga之docker部署</a>
               </div>
             </nav>
           
