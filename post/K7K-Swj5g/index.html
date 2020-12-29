@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="all,follow">
 <meta name="googlebot" content="index,follow,snippet,archive">
-<title>java无法连接7.7.1版本elasticsearch | 博</title>
+<title>docker部署es集群 | 博</title>
 <link rel="shortcut icon" href="https://Nobodylesszb.github.io/favicon.ico?v=1609238139137">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 <link rel="stylesheet" href="https://Nobodylesszb.github.io/styles/main.css" type='text/css' media='all'>
@@ -165,100 +165,224 @@
         
 
         <div class="entry-meta">
-          <span class="date">· 2020-06-18 ·</span> <span> / </span>
+          <span class="date">· 2020-12-29 ·</span> <span> / </span>
           <span class="author">
             <a href="https://Nobodylesszb.github.io" title="" rel="author"> Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a></a>
           </span>
           
-            <span class="category">
-                    <span> / </span>
-                    <a href="https://Nobodylesszb.github.io/tag/znlRRSlbQ/">elasticsearch</a>
-                </span>
-          
         </div>
         <div class='entry-header'>
-          <h1 class='entry-title'>java无法连接7.7.1版本elasticsearch</h1>
+          <h1 class='entry-title'>docker部署es集群</h1>
         </div>
         <div class="entry-container">
           <div class="entry-content">
             <article>
-              <blockquote>
-<p>最近在学习es的过程中遇到一些问题，特来记录一下</p>
-</blockquote>
-<h2 id="前序">前序</h2>
-<p>因为笔者是mac笔记本，所以直接用brew安装的<code>elasticsearch</code>,是7.7.1版本</p>
-<figure data-type="image" tabindex="1"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1592460685-image-20200618141122805.png" alt="image-20200618141122805" loading="lazy"></figure>
-<p>查看es的<a href="https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/index.html">官网文档</a>可以看到7.7.1版本的maven依赖，官方推荐使用<code>high-level</code>的版本</p>
-<pre><code class="language-xml">&lt;dependency&gt;
-    &lt;groupId&gt;org.elasticsearch.client&lt;/groupId&gt;
-    &lt;artifactId&gt;elasticsearch-rest-high-level-client&lt;/artifactId&gt;
-    &lt;version&gt;7.7.1&lt;/version&gt;
-&lt;/dependency&gt;
+              <h2 id="安装docker-以及-docker-compose">安装docker 以及 docker-compose</h2>
+<p>参考文章https://developer.aliyun.com/article/708974</p>
+<h2 id="下载镜像">下载镜像</h2>
+<p>这里以6.7.1版本为例 实际生产请按生产具体版本号</p>
+<pre><code class="language-bash">docker pull docker.elastic.co/elasticsearch/elasticsearch:6.7.1
 </code></pre>
-<p>然后我们再看他的初始化配置</p>
-<pre><code class="language-java">RestHighLevelClient client = new RestHighLevelClient(
-        RestClient.builder(
-                new HttpHost(&quot;localhost&quot;, 9200, &quot;http&quot;),
-                new HttpHost(&quot;localhost&quot;, 9201, &quot;http&quot;)));
+<h2 id="安装docker集群">安装docker集群</h2>
+<p>目前三台虚拟机 ip 10.211.55.7,10.211.55.8,10.211.55.10</p>
+<ol>
+<li>
+<p>首先在10.22.55.7创建配置文件夹</p>
+<pre><code class="language-sh">mkdir /docker/es/config
+mkdir /docker/es/data
 </code></pre>
-<p>我们在java项目中写一个配置类，如下</p>
-<pre><code class="language-java">@Configuration
-public class GulimallElasticSearchConfig {
+</li>
+<li>
+<p>然后在config目录下创建docker配置文件</p>
+<pre><code class="language-sh">vim es.yml
+</code></pre>
+<pre><code class="language-yml">node.name: es-node1
+network.host: 0.0.0.0
+network.publish_host: 10.211.55.7
+http.port: 9200
+transport.tcp.port: 9300
+http.cors.enabled: true
+http.cors.allow-origin: &quot;*&quot;
+node.master: true
+node.data: true
+discovery.zen.ping.unicast.hosts: [&quot;10.211.55.7:9300&quot;,&quot;10.211.55.8:9300&quot;,&quot;10.211.55.10:9300&quot;]
+discovery.zen.minimum_master_nodes: 2
+</code></pre>
+<p>具体参数解释</p>
+<pre><code class="language-javascript">ES_JAVA_OPTS 配置ES JVM heap内存限制
+cluster.name   集群名称
+node.name 节点名称
+node.master 节点角色配置，true表示可以成为主节点，false不能成为主节点
+node.data   节点角色配置，true表示可以成为数据节点，false不能成为数据节点
+node.ingest 节点角色配置，true表示可以成为协调节点，false不能成为协调节点（简单解释，请以官方为准）
+node.attr.rack  节点服务器所在的机柜信息，可能在数据分布中起到指导作用
+discovery.zen.ping.unicast.hosts 配置自动发现IP列表
+discovery.zen.minimum_master_nodes 防止脑裂，这个参数控制的是，一个节点需要看到的具有master节点资格的最小数量，然后才能在集群中做操作。官方的推荐值是(N/2)+1，其中N是具有master资格的节点的数量（我们的情况是3，因此这个参数设置为2，但对于只有2个节点的情况，设置为2就有些问题了，一个节点DOWN掉后，你肯定连不上2台服务器了，这点需要注意）。
+gateway.recover_after_nodes 控制集群在达到多少个节点之后才会开始数据恢复,通过这个设置可以避免集群自动相互发现的初期,shard分片不全的问题,假如es集群内一共有5个节点,就可以设置为5,那么这个集群必须有5个节点启动后才会开始数据分片,如果设置为3,就有可能另外两个节点没存储数据分片
+network.host 绑定服务的IP地址
+transport.tcp.port 内部通信端口
+http.port 对外服务端口
+path.data 数据存放目录
+bootstrap.memory_lock 锁住内存，确保ES不使用swap
+bootstrap.system_call_filter        系统调用过滤器，建议禁用该项检查，因为很多检查项需要Linux 3.5以上的内核，否则会报错。
+</code></pre>
+<p>创建jvm的配置文件</p>
+<pre><code class="language-sh">vim jvm.options
+</code></pre>
+<pre><code class="language-bash">## JVM configuration
 
-    @Bean
-    public RestHighLevelClient esRestClient(){
-        RestHighLevelClient client = new RestHighLevelClient(
-                RestClient.builder(new HttpHost(&quot;localhost&quot;, 9200, &quot;http&quot;)));
-        return  client;
-    }
-}
-</code></pre>
-<p>然后基本的yml配置</p>
-<pre><code class="language-yml">server:
-  port:9001
+################################################################
+## IMPORTANT: JVM heap size
+################################################################
+##
+## You should always set the min and max JVM heap
+## size to the same value. For example, to set
+## the heap to 4 GB, set:
+##
+## -Xms4g
+## -Xmx4g
+##
+## See https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html
+## for more information
+##
+################################################################
 
+# Xms represents the initial size of total heap space
+# Xmx represents the maximum size of total heap space
 
-spring:
-  cloud:
-    nacos:
-      discovery:
-        server-addr: 127.0.0.1:8848
-  application:
-    name: search
-</code></pre>
-<p>然后启动</p>
-<pre><code class="language-java">org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'esRestClient' defined in class path resource [com/atguigu/gulimall/search/config/GulimallElasticSearchConfig.class]: Bean instantiation via factory method failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [org.elasticsearch.client.RestHighLevelClient]: Factory method 'esRestClient' threw exception; nested exception is java.lang.NoSuchFieldError: IGNORE_DEPRECATIONS
-	
-</code></pre>
-<figure data-type="image" tabindex="2"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1592461149-image-20200618141907712.png" alt="image-20200618141907712" loading="lazy"></figure>
-<p>发现其报错了</p>
-<p>其中最主要的一句报错就是</p>
-<p><strong>org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'esRestClient' defined in class path resource [com/atguigu/gulimall/search/config/GulimallElasticSearchConfig.class]: Bean instantiation via factory method failed; nested exception is org.springframework.beans.BeanInstantiationException: Failed to instantiate [org.elasticsearch.client.RestHighLevelClient]: Factory method 'esRestClient' threw exception; nested exception is java.lang.NoSuchFieldError: IGNORE_DEPRECATIONS</strong></p>
-<h2 id="解决">解决</h2>
-<p>笔者查看了一些stackoverflow,<a href="https://stackoverflow.com/questions/62338588/spring-boot-with-elastic-search-causing-java-lang-nosuchfielderror-ignore-depre">具体网址</a></p>
-<p>不仅需要加这个依赖</p>
-<pre><code class="language-xml">&lt;dependency&gt;
-    &lt;groupId&gt;org.elasticsearch.client&lt;/groupId&gt;
-    &lt;artifactId&gt;elasticsearch-rest-high-level-client&lt;/artifactId&gt;
-    &lt;version&gt;7.7.1&lt;/version&gt;
-&lt;/dependency&gt;
-</code></pre>
-<p>仍然需要加这两个依赖</p>
-<pre><code class="language-xml">		&lt;dependency&gt;
-            &lt;groupId&gt;org.elasticsearch.client&lt;/groupId&gt;
-            &lt;artifactId&gt;elasticsearch-rest-client&lt;/artifactId&gt;
-            &lt;version&gt;7.7.1&lt;/version&gt;
-        &lt;/dependency&gt;
+-Xms512m
+-Xmx512m
 
-        &lt;dependency&gt;
-            &lt;groupId&gt;org.elasticsearch&lt;/groupId&gt;
-            &lt;artifactId&gt;elasticsearch&lt;/artifactId&gt;
-            &lt;version&gt;7.7.1&lt;/version&gt;
-        &lt;/dependency&gt;
+################################################################
+## Expert settings
+################################################################
+##
+## All settings below this section are considered
+## expert settings. Don't tamper with them unless
+## you understand what you are doing
+##
+################################################################
+
+## GC configuration
+8-13:-XX:+UseConcMarkSweepGC
+8-13:-XX:CMSInitiatingOccupancyFraction=75
+8-13:-XX:+UseCMSInitiatingOccupancyOnly
+
+## G1GC Configuration
+# NOTE: G1 GC is only supported on JDK version 10 or later
+# to use G1GC, uncomment the next two lines and update the version on the
+# following three lines to your version of the JDK
+# 10-13:-XX:-UseConcMarkSweepGC
+# 10-13:-XX:-UseCMSInitiatingOccupancyOnly
+14-:-XX:+UseG1GC
+14-:-XX:G1ReservePercent=25
+14-:-XX:InitiatingHeapOccupancyPercent=30
+
+## JVM temporary directory
+-Djava.io.tmpdir=${ES_TMPDIR}
+-Dlog4j2.disable.jmx=true
+
+## heap dumps
+
+# generate a heap dump when an allocation from the Java heap fails
+# heap dumps are created in the working directory of the JVM
+-XX:+HeapDumpOnOutOfMemoryError
+
+# specify an alternative path for heap dumps; ensure the directory exists and
+# has sufficient space
+-XX:HeapDumpPath=data
+
+# specify an alternative path for JVM fatal error logs
+-XX:ErrorFile=logs/hs_err_pid%p.log
+
+## JDK 8 GC logging
+8:-XX:+PrintGCDetails
+8:-XX:+PrintGCDateStamps
+8:-XX:+PrintTenuringDistribution
+8:-XX:+PrintGCApplicationStoppedTime
+8:-Xloggc:logs/gc.log
+8:-XX:+UseGCLogFileRotation
+8:-XX:NumberOfGCLogFiles=32
+8:-XX:GCLogFileSize=64m
+
+# JDK 9+ GC logging
+9-:-Xlog:gc*,gc+age=trace,safepoint:file=logs/gc.log:utctime,pid,tags:filecount=32,filesize=64m
 </code></pre>
-<p>然后重新clean，install，重启</p>
-<figure data-type="image" tabindex="3"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1592462290-image-20200618143808157.png" alt="image-20200618143808157" loading="lazy"></figure>
-<p>可见已经启动</p>
+<p>其中启动内存建议是服务器内存的一半，比如服务器内存16g 就设置-Xms8g<br>
+-Xmx8g</p>
+</li>
+<li>
+<p>编写docker compose文件</p>
+<pre><code class="language-shell">vi docker-compose.yml
+</code></pre>
+<pre><code class="language-yml">version: '2.2'
+services:
+  elasticsearch:
+    image: elasticsearch:6.7.1
+    restart: always
+    container_name: es-node1
+    privileged: true
+    network_mode: host
+    volumes:
+      - /docker/es/data:/usr/share/elasticsearch/data
+      - /docker/es/config/es.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - /docker/es/config/jvm.options:/usr/share/elasticsearch/config/jvm.options
+    environment:
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+    ports:
+      - 9200:9200
+      - 9300:9300
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+</code></pre>
+<p>记得给文件夹授予权限</p>
+<p><code>chmod 777 /docker/es -R</code></p>
+</li>
+<li>
+<p>启动es</p>
+<pre><code class="language-sh">docker-compose up -d
+</code></pre>
+<p>然后用docker ps 查看是否启动进程</p>
+<figure data-type="image" tabindex="1"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1609208316-image-20201229101835678.png" alt="image-20201229101835678" loading="lazy"></figure>
+<p>如果遇到启动失败，可以用<code>docker logs 容器id</code>来查看日志</p>
+<p>比如<code>docker logs 4d92f5249b81</code></p>
+<figure data-type="image" tabindex="2"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1609206411-image-20201229094650799.png" alt="image-20201229094650799" loading="lazy"></figure>
+</li>
+</ol>
+<p>然后可以访问服务器ip:9200来访问es，请确保9200 9300端口已开放</p>
+<figure data-type="image" tabindex="3"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1609208512-image-20201229102151886.png" alt="image-20201229102151886" loading="lazy"></figure>
+<p>其他两台电脑依次部署 具体配置文件请看附件</p>
+<h2 id="部署完成">部署完成</h2>
+<p>可以用http://ip:9200/_nodes 来查看集群信息</p>
+<figure data-type="image" tabindex="4"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1609221496-image-20201229135815601.png" alt="image-20201229135815601" loading="lazy"></figure>
+<p>可以看到已经有三个节点</p>
+<h2 id="部署出现的问题">部署出现的问题</h2>
+<ol>
+<li>
+<p>没有访问路径的权限</p>
+<figure data-type="image" tabindex="5"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1609208752-image-20201229102552285.png" alt="image-20201229102552285" loading="lazy"></figure>
+<p>解决方案：授予权限</p>
+<pre><code class="language-SH">chmod 777 /docker/es -R
+</code></pre>
+</li>
+<li>
+<p>es占用内存空间太小</p>
+<figure data-type="image" tabindex="6"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1609209246-1609206411-image-20201229094650799.png" alt="image-20201229094650799" loading="lazy"></figure>
+<p>解决方案</p>
+<p>https://www.jianshu.com/p/90ec54cd4b10</p>
+</li>
+<li>
+<p>es从节点无法连城集群</p>
+<figure data-type="image" tabindex="7"><img src="https://gitee.com/nobodylesszb/upic/raw/pic/upload/pics/1609215897-image-20201229122456695.png" alt="image-20201229122456695" loading="lazy"></figure>
+<p>解决方案</p>
+<p>https://discuss.elastic.co/t/failed-add-node/187715/2</p>
+<p>清空data下的数据</p>
+</li>
+</ol>
 
             </article>
           </div>
@@ -344,7 +468,7 @@ spring:
             <nav class="navigation pagination" role="navigation">
               <h2 class="screen-reader-text">Posts navigation</h2>
               <div class="nav-links">
-                <a class="next page-numbers" href="https://Nobodylesszb.github.io/post/uGJMQ57dS/">下一篇->Spring Cloud Eureka：服务注册与发现</a>
+                <a class="next page-numbers" href="https://Nobodylesszb.github.io/post/6DXi-P3LV/">下一篇->Lombok子类如何使用@Builder</a>
               </div>
             </nav>
           
